@@ -9,7 +9,7 @@ object Operators {
     * @param surname just surname.
     * @param age just age.
     */
-  class Person(name: String, surname: String, age: Int) {}
+  class Person(val name: String, val surname: String, val age: Int) {}
 
   /**
     * Should return formatted string.
@@ -18,7 +18,7 @@ object Operators {
     * @param age just age.
     * @return should return string in the following format: "name surname age".
     */
-  def getPersonInfo(name: String, surname: String, age: Int): String = ???
+  def getPersonInfo(name: String, surname: String, age: Int): String = s"$name $surname $age"
 
   /**
     * should return Person info as in [[getPersonInfo]] method.
@@ -26,7 +26,7 @@ object Operators {
     * @return return should be the same as in [[getPersonInfo]].
     * @hint: try to override [[Person.toString]] method.
     */
-  def getPersonInfoObject(person: Person): String = ???
+  def getPersonInfoObject(person: Person): String = getPersonInfo(person.name, person.surname, person.age)
 
   /**
     * Just compare to Persons by their age and return elder one.
@@ -34,5 +34,5 @@ object Operators {
     * @param second person.
     * @return eldest person.
     */
-  def getElderPerson(first: Person, second: Person): Person = ???
+  def getElderPerson(first: Person, second: Person): Person = if (first.age < second.age) second else first
 }
