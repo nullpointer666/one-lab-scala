@@ -5,7 +5,8 @@ import scala.annotation.tailrec
 object Recursion {
   def printNTimes(n: Int, value: String): Unit = ???
 
-  def gcd(a: Long, b: Long): Long = ???
+  @tailrec
+  def gcd(a: Long, b: Long): Long = if (b == 0) a else gcd(b, a % b)
 
   def nthFibonacciNumber(n: Int): Int =
     if (n <= 0) 0 else if (n <= 2) 1 else nthFibonacciNumber(n - 1) + nthFibonacciNumber(n - 2)
