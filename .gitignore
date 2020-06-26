@@ -1,3 +1,5 @@
 .idea/
 *.worksheet.sc
 target/
+.bloop/
+.metals/
