@@ -3,7 +3,12 @@ package one.lab.tasks.week.one
 import scala.annotation.tailrec
 
 object Recursion {
-  def printNTimes(n: Int, value: String): Unit = ???
+  @tailrec
+  def printNTimes(n: Int, value: String): Unit = {
+    if (n == 0) return
+    println(value)
+    printNTimes(n - 1, value)
+  }
 
   @tailrec
   def gcd(a: Long, b: Long): Long = if (b == 0) a else gcd(b, a % b)
