@@ -10,7 +10,6 @@ package one.lab.tasks.week.one
   *    But when I supply appropriate disk it will print s"playing ${disk.game()}"
   */
 object Interfaces {
-
   trait GameDisk {
     val consoleType: String
     val game: String
@@ -28,4 +27,21 @@ object Interfaces {
     override val game: String = "ForzaHorizon race game"
   }
 
+  class Xbox extends Console {
+    def play(disk: GameDisk): Unit =
+      if (disk.consoleType == "Xbox") println(s"Playing $disk.game")
+      else println("Disk format is invalid")
+  }
+
+  class PlayStation extends Console {
+    def play(disk: GameDisk): Unit =
+      if (disk.consoleType == "PlayStation") println(s"Playing $disk.game")
+      else println("Disk format is invalid")
+  }
+
+  class Sega extends Console {
+    def play(disk: GameDisk): Unit =
+      if (disk.consoleType == "Sega") println(s"Playing $disk.game")
+      else println("Disk format is invalid")
+  }
 }
