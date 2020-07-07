@@ -1,7 +1,6 @@
 package one.lab.tasks.week.two
 
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.File
 
 import scala.jdk.CollectionConverters._
 import scala.util.chaining._
@@ -22,24 +21,58 @@ import scala.util.chaining._
 object FileManager extends App {
 
   trait Command {
-    def isSubstitutive: Boolean = false
+    def isSubstitutive = false
   }
 
   case class PrintErrorCommand(error: String) extends Command
-  case class ListDirectoryCommand()           extends Command
-  case class ListFilesCommand()               extends Command
-  case class ListAllContentCommand()          extends Command
+
+  case class ListDirectoryCommand() extends Command
+
+  case class ListFilesCommand() extends Command
+
+  case class ListAllContentCommand() extends Command
 
   case class ChangeDirectoryCommand(destination: String) extends Command {
-    override val isSubstitutive: Boolean = true
+    override val isSubstitutive = true
   }
 
   case class ChangePathError(error: String)
 
-  def getFiles(path: String): List[String]                                       = ???
-  def getDirectories(path: String): List[String]                                 = ???
-  def changePath(current: String, path: String): Either[ChangePathError, String] = ???
-  def parseCommand(input: String): Command                                       = ???
-  def handleCommand(command: Command, currentPath: String): String               = ???
-  def main(basePath: String): Unit                                               = ???
+  def getFiles(path: String) = {
+    val d = new File(path)
+    if (d.exists && d.isDirectory) d.listFiles.filter(_.isFile).map(_.getName).toList
+    else List[String]()
+  }
+
+  def getDirectories(path: String) = {
+    val d = new File(path)
+    if (d.exists && d.isDirectory) d.listFiles.filter(_.isDirectory).map(_.getName).toList
+    else List[String]()
+  }
+
+  def changePath(current: String, path: String) = {
+    val dirs = getDirectories(current)
+    if (dirs.contains(path)) Right(s"$current/$path")
+    else Left(ChangePathError(s"Couldn't change current directory: no directory named $path"))
+  }
+
+  def parseCommand(input: String) = {
+    val cmd = input.split(' ')
+    cmd.head match {
+      case "ll" => ListAllContentCommand()
+      case "ls" => ListFilesCommand()
+      case "dir" => ListDirectoryCommand()
+      case "cd" => ChangeDirectoryCommand(cmd.last)
+      case _ => PrintErrorCommand("No such command")
+    }
+  }
+
+  def handleCommand(command: Command, currentPath: String) = command match {
+    case ListFilesCommand() => getFiles(currentPath).toString
+    case ListDirectoryCommand() => getDirectories(currentPath).toString
+    case ListAllContentCommand() => (getFiles(currentPath) ++ getDirectories(currentPath)).toString
+    case ChangeDirectoryCommand(destination: String) => changePath(currentPath, destination).toString
+  }
+
+  def main(basePath: String): Unit = ???
 }
