@@ -2,15 +2,13 @@ package one.lab.tasks.week.three
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
+import one.lab.tasks.week.three.RestClientImpl.get
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods.parse
+import sttp.client.ResponseError
 
-import scala.util.Failure
-import scala.util.Success
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.util.{Failure, Success}
 
 object Githuber extends App {
   implicit val system: ActorSystem                        = ActorSystem("lalka")
@@ -19,15 +17,38 @@ object Githuber extends App {
   implicit val defaultFormats: DefaultFormats.type        = DefaultFormats
 
   // TODO: поля можете добавить какие хотите
-  case class GithubUser()
-  case class GithubRepository()
+  case class GithubUser(login: String) {
+    override def toString: String = s"Login: $login"
+  }
+
+  case class GithubRepository(fullName: String) {
+    override def toString: String = s"Repo: $fullName"
+  }
 
   //  https://api.github.com/users/{$USER}
-  def getGithubUser(username: String): Future[GithubUser] = ???
+  def getGithubUser(username: String): Future[GithubUser] = {
+    val response = get(s"https://api.github.com/users/$username")
+    response.map { parse(_).extract[GithubUser] }
+  }
 
-  def getUserRepositories(repoUrl: String): Future[List[GithubRepository]] = ???
+  def getUserRepositories(username: String): Future[List[GithubRepository]] = {
+    val response = get(s"https://api.github.com/users/$username/repos")
+    response.map { parse(_).camelizeKeys.extract[List[GithubRepository]] }
+  }
 
-  def getUserInfo(username: String): Unit = ???
+  def getUserInfo(username: String): Unit = {
+    getGithubUser(username) onComplete {
+      case Success(response) => println(response)
+      case Failure(errorMessage) => throw new Exception(errorMessage)
+    }
 
-  getUserInfo("")
+    getUserRepositories(username) onComplete {
+      case Success(response) => response.map(println)
+      case Failure(errorMessage) => throw new Exception(errorMessage)
+    }
+  }
+
+  getUserInfo("arturka")
+
+//  getUserInfo("")
 }
