@@ -2,6 +2,7 @@ package one.lab.tasks.week.two
 
 import java.io.File
 import java.nio.file.NoSuchFileException
+import scala.io.StdIn.readLine
 
 import scala.jdk.CollectionConverters._
 import scala.util.chaining._
@@ -46,7 +47,7 @@ object FileManager extends App {
         case Some(param) => file.listFiles.filter(param).map(_.getName).toList
         case None => file.listFiles.map(_.getName).toList
       }
-    else throw new NoSuchFileException("Such file doesn't exist")
+    else throw new NoSuchFileException(s"Such file doesn't exist: $file")
   }
 
   def byFile(file: File): Boolean = file.isFile
@@ -57,8 +58,15 @@ object FileManager extends App {
 
   def changePath(current: String, path: String): Either[ChangePathError, String] = {
     val dirs = getDirectories(current)
-    if (dirs.contains(path)) Right(s"$current/$path")
-    else Left(ChangePathError(s"Couldn't change current directory: no directory named $path"))
+    val error = ChangePathError(s"Couldn't change current directory: no directory named $path")
+    path match {
+      case ".." => {
+        val pathChunks = current.split('/').tail
+        if (pathChunks.length > 0) Right("/" + pathChunks.take(pathChunks.length - 1).mkString("/"))
+        else Left(ChangePathError(pathChunks.length + ""))
+      }
+      case _ => if (dirs.contains(path)) Right(s"$current/$path") else Left(error)
+    }
   }
 
   def parseCommand(input: String): Command = {
@@ -72,15 +80,25 @@ object FileManager extends App {
     }
   }
 
-  def handleCommand(command: Command, currentPath: String) = command match {
-    case ListFilesCommand() => getFiles(currentPath).toString
-    case ListDirectoryCommand() => getDirectories(currentPath).toString
-    case ListAllContentCommand() => getFilenames(currentPath).toString
-    case ChangeDirectoryCommand(destination: String) => changePath(currentPath, destination).toString
+  def handleCommand(command: Command, currentPath: String): List[String] = command match {
+    case ListFilesCommand() => getFiles(currentPath)
+    case ListDirectoryCommand() => getDirectories(currentPath)
+    case ListAllContentCommand() => getFilenames(currentPath)
+    case ChangeDirectoryCommand(destination: String) => changePath(currentPath, destination) match { case Right(path) => List(path) }
   }
-
-  println(handleCommand(ListAllContentCommand(), "/home/azamat"))
 
   def main(basePath: String): Unit = {
+    var currentPath = basePath
+
+    while (true) {
+      val cmd = parseCommand(readLine())
+      if (cmd.isInstanceOf[ChangeDirectoryCommand]) {
+        currentPath = handleCommand(cmd, currentPath).head
+        println(currentPath)
+      }
+      else handleCommand(cmd, currentPath).foreach(println)
+    }
   }
+
+  main("/home/azamat/SDU")
 }
