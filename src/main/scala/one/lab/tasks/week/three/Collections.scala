@@ -26,8 +26,9 @@ object Collections {
   def splitAtK[A](k: Int, list: List[A]): (List[A], List[A]) = {
     @tailrec
     def splitAtKUtil(cnt: Int = k, accumulator: List[A] = List(), temp: List[A] = list): (List[A], List[A]) = temp match {
-      case elem :: rest => if (cnt > 0) splitAtKUtil(cnt - 1, accumulator ++ List(elem), rest) else (accumulator, List(elem) ++ rest)
       case Nil => throw new NoSuchElementException
+      case elem :: Nil => if (accumulator.isEmpty) (List(elem), accumulator) else (accumulator, List(elem))
+      case elem :: rest => if (cnt > 0) splitAtKUtil(cnt - 1, accumulator ++ List(elem), rest) else (accumulator, List(elem) ++ rest)
     }
 
     splitAtKUtil()
@@ -37,5 +38,9 @@ object Collections {
   // removeKthElement(2, List(1,2,3,4,5,6)) == (List(1,2,4,5,6), 2)
   // removeKthElement(-3, List(1,2,3,4,5,6)) == IndexOutOfBoundException
   // removeKthElement(1000, List(1,2,3,4,5,6)) == IndexOutOfBoundException
-  def removeKthElement[A](k: Int, list: List[A]): (List[A], A) = ???
+  def removeKthElement[A](k: Int, list: List[A]): (List[A], A) = {
+    if (k >= list.size || k < 0) throw new IndexOutOfBoundsException
+    val chunks = splitAtK(k, list)
+    (chunks._1 ++ splitAtK(1, chunks._2)._2, splitAtK(1, chunks._2)._1.head)
+  }
 }
