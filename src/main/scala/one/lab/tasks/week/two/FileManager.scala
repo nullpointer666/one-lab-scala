@@ -1,6 +1,7 @@
 package one.lab.tasks.week.two
 
 import java.io.File
+import java.nio.file.NoSuchFileException
 
 import scala.jdk.CollectionConverters._
 import scala.util.chaining._
@@ -38,30 +39,34 @@ object FileManager extends App {
 
   case class ChangePathError(error: String)
 
-  def getFiles(path: String) = {
-    val d = new File(path)
-    if (d.exists && d.isDirectory) d.listFiles.filter(_.isFile).map(_.getName).toList
-    else List[String]()
+  def getFilenames(path: String, filterBy: Option[File => Boolean] = None): List[String] = {
+    val file = new File(path)
+    if (file.exists && file.isDirectory)
+      filterBy match {
+        case Some(param) => file.listFiles.filter(param).map(_.getName).toList
+        case None => file.listFiles.map(_.getName).toList
+      }
+    else throw new NoSuchFileException("Such file doesn't exist")
   }
 
-  def getDirectories(path: String) = {
-    val d = new File(path)
-    if (d.exists && d.isDirectory) d.listFiles.filter(_.isDirectory).map(_.getName).toList
-    else List[String]()
-  }
+  def byFile(file: File): Boolean = file.isFile
+  def byDirectory(file: File): Boolean = file.isDirectory
 
-  def changePath(current: String, path: String) = {
+  def getFiles(path: String): List[String] = getFilenames(path, Some(byFile))
+  def getDirectories(path: String): List[String] = getFilenames(path, Some(byDirectory))
+
+  def changePath(current: String, path: String): Either[ChangePathError, String] = {
     val dirs = getDirectories(current)
     if (dirs.contains(path)) Right(s"$current/$path")
     else Left(ChangePathError(s"Couldn't change current directory: no directory named $path"))
   }
 
-  def parseCommand(input: String) = {
+  def parseCommand(input: String): Command = {
     val cmd = input.split(' ')
     cmd.head match {
+      case "dir" => ListDirectoryCommand()
       case "ll" => ListAllContentCommand()
       case "ls" => ListFilesCommand()
-      case "dir" => ListDirectoryCommand()
       case "cd" => ChangeDirectoryCommand(cmd.last)
       case _ => PrintErrorCommand("No such command")
     }
@@ -70,9 +75,12 @@ object FileManager extends App {
   def handleCommand(command: Command, currentPath: String) = command match {
     case ListFilesCommand() => getFiles(currentPath).toString
     case ListDirectoryCommand() => getDirectories(currentPath).toString
-    case ListAllContentCommand() => (getFiles(currentPath) ++ getDirectories(currentPath)).toString
+    case ListAllContentCommand() => getFilenames(currentPath).toString
     case ChangeDirectoryCommand(destination: String) => changePath(currentPath, destination).toString
   }
 
-  def main(basePath: String): Unit = ???
+  println(handleCommand(ListAllContentCommand(), "/home/azamat"))
+
+  def main(basePath: String): Unit = {
+  }
 }
