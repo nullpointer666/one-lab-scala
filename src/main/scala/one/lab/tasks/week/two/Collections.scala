@@ -24,6 +24,7 @@ object Collections {
   // getPreLast(List(1 ,2, 3, 4)) -> 3
   // getPreLast(List(1))          -> java.util.NoSuchElementException
   // getPreLast(List())           -> java.util.NoSuchElementException
+  @tailrec
   def getPreLast[A](list: List[A]): A = list match {
     case Nil => throw new java.util.NoSuchElementException()
     case _ :: Nil => throw new java.util.NoSuchElementException()
@@ -34,11 +35,12 @@ object Collections {
   // getPreLastOption(List(1 ,2, 3, 4)) -> Some(3)
   // getPreLastOption(List(1))          -> None
   // getPreLastOption(List())           -> None
-  def getPreLast[A](list: List[A]): Option[A] = list match {
+  @tailrec
+  def getPreLastOption[A](list: List[A]): Option[A] = list match {
     case Nil => None
     case _ :: Nil => None
     case first :: _ :: Nil => Some(first)
-    case _ :: rest => getPreLast(rest)
+    case _ :: rest => getPreLastOption(rest)
   }
 
   // getNthElement(3, List(1 ,2, 3, 4)) -> 3
