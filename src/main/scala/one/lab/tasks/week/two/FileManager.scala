@@ -2,8 +2,9 @@ package one.lab.tasks.week.two
 
 import java.io.File
 import java.nio.file.NoSuchFileException
-import scala.io.StdIn.readLine
 
+import scala.annotation.tailrec
+import scala.io.StdIn.readLine
 import scala.jdk.CollectionConverters._
 import scala.util.chaining._
 
@@ -88,16 +89,22 @@ object FileManager extends App {
   }
 
   def main(basePath: String): Unit = {
-    var currentPath = basePath
-
-    while (true) {
-      val cmd = parseCommand(readLine())
-      if (cmd.isInstanceOf[ChangeDirectoryCommand]) {
-        currentPath = handleCommand(cmd, currentPath).head
-        println(currentPath)
+    @tailrec
+    def run(path: String = basePath, input: String = readLine()): Unit = {
+      if (input == "exit") return
+      val command = parseCommand(input)
+      if (command.isInstanceOf[ChangeDirectoryCommand]) {
+        val newInput = readLine()
+        run(handleCommand(command, path).head, newInput)
       }
-      else handleCommand(cmd, currentPath).foreach(println)
+      else {
+        handleCommand(command, path).foreach(println)
+        val newInput = readLine()
+        run(path, newInput)
+      }
     }
+
+    run()
   }
 
   main("/home/azamat/SDU")
